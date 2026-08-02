@@ -1,0 +1,493 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Market Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    'inter': ['Inter', 'sans-serif'],
+                },
+                colors: {
+                    'dashboard-bg': '#1a1d29',
+                    'panel-bg': '#252836',
+                    'border-color': '#2d3748',
+                    'text-primary': '#ffffff',
+                    'text-secondary': '#8b8ca3',
+                    'success': '#00d4aa',
+                    'danger': '#ff4757',
+                    'warning': '#ffa726',
+                }
+            }
+        }
+    };
+    </script>
+</head>
+<body class="bg-dashboard-bg text-text-primary font-inter overflow-hidden">
+    <!-- @COMPONENT: DashboardLayout -->
+    <div class="flex h-screen">
+        <!-- @COMPONENT: Sidebar -->
+        <div class="w-80 bg-panel-bg border-r border-border-color flex flex-col">
+            <!-- @COMPONENT: SearchHeader -->
+            <div class="p-6 border-b border-border-color">
+                <h1 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fas fa-chart-line text-success mr-3"></i>
+                    Stock Dashboard
+                </h1>
+                <!-- @COMPONENT: SearchInput -->
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        placeholder="Search stocks..." 
+                        class="w-full bg-dashboard-bg border border-border-color rounded-lg px-4 py-3 pl-10 text-sm focus:outline-none focus:border-success transition-colors"
+                        data-event="input:handleSearch"
+                        data-implementation="Should filter stock list in real-time"
+                    >
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary"></i>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: SearchHeader -->
+
+            <!-- @COMPONENT: StockList -->
+            <div class="flex-1 overflow-y-auto">
+                <div class="p-4">
+                    <h2 class="text-sm font-medium text-text-secondary mb-3 uppercase tracking-wide">Watchlist</h2>
+                    
+                    <!-- @MAP: stocks.map(stock => ( -->
+                    <!-- @COMPONENT: StockListItem [selected] -->
+                    <div class="bg-success bg-opacity-10 border border-success rounded-lg p-4 mb-3 cursor-pointer transition-all hover:bg-opacity-20" data-bind="selectedStock === 'AAPL'" data-event="click:selectStock('AAPL')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold text-success" data-bind="stock.symbol">AAPL</h3>
+                                <p class="text-xs text-text-secondary" data-bind="stock.name">Apple Inc.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold" data-bind="stock.price">$150.25</p>
+                                <p class="text-xs text-success flex items-center">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span data-bind="stock.change">+2.45%</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-dashboard-bg rounded-full h-1">
+                            <div class="bg-success h-1 rounded-full w-3/4"></div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: StockListItem -->
+
+                    <div class="bg-panel-bg border border-border-color rounded-lg p-4 mb-3 cursor-pointer transition-all hover:bg-dashboard-bg" data-event="click:selectStock('GOOGL')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold">GOOGL</h3>
+                                <p class="text-xs text-text-secondary">Alphabet Inc.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">$2,750.80</p>
+                                <p class="text-xs text-danger flex items-center">
+                                    <i class="fas fa-arrow-down mr-1"></i>
+                                    <span>-1.20%</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-dashboard-bg rounded-full h-1">
+                            <div class="bg-danger h-1 rounded-full w-1/3"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-panel-bg border border-border-color rounded-lg p-4 mb-3 cursor-pointer transition-all hover:bg-dashboard-bg" data-event="click:selectStock('MSFT')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold">MSFT</h3>
+                                <p class="text-xs text-text-secondary">Microsoft Corp.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">$320.45</p>
+                                <p class="text-xs text-success flex items-center">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span>+0.85%</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-dashboard-bg rounded-full h-1">
+                            <div class="bg-success h-1 rounded-full w-2/3"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-panel-bg border border-border-color rounded-lg p-4 mb-3 cursor-pointer transition-all hover:bg-dashboard-bg" data-event="click:selectStock('TSLA')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold">TSLA</h3>
+                                <p class="text-xs text-text-secondary">Tesla Inc.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">$185.75</p>
+                                <p class="text-xs text-success flex items-center">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span>+3.25%</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-dashboard-bg rounded-full h-1">
+                            <div class="bg-success h-1 rounded-full w-4/5"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-panel-bg border border-border-color rounded-lg p-4 mb-3 cursor-pointer transition-all hover:bg-dashboard-bg" data-event="click:selectStock('AMZN')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold">AMZN</h3>
+                                <p class="text-xs text-text-secondary">Amazon.com Inc.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">$3,180.95</p>
+                                <p class="text-xs text-danger flex items-center">
+                                    <i class="fas fa-arrow-down mr-1"></i>
+                                    <span>-0.45%</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-dashboard-bg rounded-full h-1">
+                            <div class="bg-danger h-1 rounded-full w-1/4"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-panel-bg border border-border-color rounded-lg p-4 mb-3 cursor-pointer transition-all hover:bg-dashboard-bg" data-event="click:selectStock('META')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold">META</h3>
+                                <p class="text-xs text-text-secondary">Meta Platforms Inc.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">$275.60</p>
+                                <p class="text-xs text-success flex items-center">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span>+1.80%</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-dashboard-bg rounded-full h-1">
+                            <div class="bg-success h-1 rounded-full w-3/5"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-panel-bg border border-border-color rounded-lg p-4 mb-3 cursor-pointer transition-all hover:bg-dashboard-bg" data-event="click:selectStock('NFLX')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold">NFLX</h3>
+                                <p class="text-xs text-text-secondary">Netflix Inc.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">$425.30</p>
+                                <p class="text-xs text-success flex items-center">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span>+2.10%</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-dashboard-bg rounded-full h-1">
+                            <div class="bg-success h-1 rounded-full w-2/3"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-panel-bg border border-border-color rounded-lg p-4 mb-3 cursor-pointer transition-all hover:bg-dashboard-bg" data-event="click:selectStock('NVDA')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold">NVDA</h3>
+                                <p class="text-xs text-text-secondary">NVIDIA Corp.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">$485.90</p>
+                                <p class="text-xs text-success flex items-center">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span>+4.15%</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-dashboard-bg rounded-full h-1">
+                            <div class="bg-success h-1 rounded-full w-5/6"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-panel-bg border border-border-color rounded-lg p-4 mb-3 cursor-pointer transition-all hover:bg-dashboard-bg" data-event="click:selectStock('AMD')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold">AMD</h3>
+                                <p class="text-xs text-text-secondary">Advanced Micro Devices</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">$95.45</p>
+                                <p class="text-xs text-danger flex items-center">
+                                    <i class="fas fa-arrow-down mr-1"></i>
+                                    <span>-1.75%</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-dashboard-bg rounded-full h-1">
+                            <div class="bg-danger h-1 rounded-full w-2/5"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-panel-bg border border-border-color rounded-lg p-4 mb-3 cursor-pointer transition-all hover:bg-dashboard-bg" data-event="click:selectStock('INTC')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold">INTC</h3>
+                                <p class="text-xs text-text-secondary">Intel Corp.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold">$48.25</p>
+                                <p class="text-xs text-danger flex items-center">
+                                    <i class="fas fa-arrow-down mr-1"></i>
+                                    <span>-0.95%</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-dashboard-bg rounded-full h-1">
+                            <div class="bg-danger h-1 rounded-full w-1/3"></div>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+
+                </div>
+            </div>
+            <!-- @END_COMPONENT: StockList -->
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent -->
+        <div class="flex-1 flex flex-col">
+            <!-- @COMPONENT: TopBar -->
+            <div class="bg-panel-bg border-b border-border-color p-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h1 class="text-2xl font-bold flex items-center" data-bind="selectedStock.name">
+                            Apple Inc. 
+                            <span class="text-text-secondary ml-2 text-lg" data-bind="selectedStock.symbol">(AAPL)</span>
+                        </h1>
+                        <p class="text-text-secondary text-sm mt-1">Technology • NASDAQ</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-3xl font-bold" data-bind="selectedStock.price">$150.25</p>
+                        <p class="text-success flex items-center justify-end text-lg">
+                            <i class="fas fa-arrow-up mr-2"></i>
+                            <span data-bind="selectedStock.change">+$3.68 (+2.45%)</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- @COMPONENT: MetricsBar -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div class="bg-dashboard-bg rounded-lg p-4">
+                        <p class="text-text-secondary text-sm">Market Cap</p>
+                        <p class="font-semibold text-lg" data-bind="selectedStock.marketCap">$2.35T</p>
+                    </div>
+                    <div class="bg-dashboard-bg rounded-lg p-4">
+                        <p class="text-text-secondary text-sm">52W High</p>
+                        <p class="font-semibold text-lg" data-bind="selectedStock.high52w">$182.94</p>
+                    </div>
+                    <div class="bg-dashboard-bg rounded-lg p-4">
+                        <p class="text-text-secondary text-sm">52W Low</p>
+                        <p class="font-semibold text-lg" data-bind="selectedStock.low52w">$124.17</p>
+                    </div>
+                    <div class="bg-dashboard-bg rounded-lg p-4">
+                        <p class="text-text-secondary text-sm">Volume</p>
+                        <p class="font-semibold text-lg" data-bind="selectedStock.volume">48.2M</p>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: MetricsBar -->
+            </div>
+            <!-- @END_COMPONENT: TopBar -->
+
+            <!-- @COMPONENT: ChartArea -->
+            <div class="flex-1 p-6">
+                <div class="bg-panel-bg rounded-xl p-6 h-full">
+                    <!-- @COMPONENT: ChartControls -->
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex space-x-4">
+                            <button class="bg-success text-dashboard-bg px-4 py-2 rounded-lg font-medium text-sm transition-colors" data-event="click:changeTimeframe('1D')">1D</button>
+                            <button class="bg-dashboard-bg text-text-secondary px-4 py-2 rounded-lg font-medium text-sm hover:bg-border-color transition-colors" data-event="click:changeTimeframe('1W')">1W</button>
+                            <button class="bg-dashboard-bg text-text-secondary px-4 py-2 rounded-lg font-medium text-sm hover:bg-border-color transition-colors" data-event="click:changeTimeframe('1M')">1M</button>
+                            <button class="bg-dashboard-bg text-text-secondary px-4 py-2 rounded-lg font-medium text-sm hover:bg-border-color transition-colors" data-event="click:changeTimeframe('3M')">3M</button>
+                            <button class="bg-dashboard-bg text-text-secondary px-4 py-2 rounded-lg font-medium text-sm hover:bg-border-color transition-colors" data-event="click:changeTimeframe('1Y')">1Y</button>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <select class="bg-dashboard-bg border border-border-color rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-success" data-event="change:changeIndicator">
+                                <option>Moving Average</option>
+                                <option>Bollinger Bands</option>
+                                <option>RSI</option>
+                                <option>MACD</option>
+                            </select>
+                            <button class="bg-dashboard-bg border border-border-color rounded-lg px-3 py-2 text-sm hover:bg-border-color transition-colors">
+                                <i class="fas fa-download mr-2"></i>Export
+                            </button>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: ChartControls -->
+
+                    <!-- @COMPONENT: StockChart -->
+                    <div class="relative h-96">
+                        <canvas id="stockChart" class="w-full h-full" data-implementation="Should render interactive stock chart using Chart.js with real-time data"></canvas>
+                    </div>
+                    <!-- @END_COMPONENT: StockChart -->
+
+                    <!-- @COMPONENT: AIForecast -->
+                    <div class="mt-6 bg-dashboard-bg rounded-lg p-4 border-l-4 border-warning">
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-warning bg-opacity-20 rounded-full p-2">
+                                <i class="fas fa-robot text-warning"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-sm">AI Price Prediction</h3>
+                                <p class="text-text-secondary text-sm mt-1">Based on technical analysis and market sentiment</p>
+                                <div class="flex items-center mt-3 space-x-6">
+                                    <div>
+                                        <p class="text-xs text-text-secondary">Next Day Forecast</p>
+                                        <p class="font-bold text-success" data-bind="aiPrediction.nextDay">$152.80 (+1.70%)</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-text-secondary">Confidence</p>
+                                        <p class="font-bold" data-bind="aiPrediction.confidence">74%</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-text-secondary">Signal</p>
+                                        <p class="font-bold text-success" data-bind="aiPrediction.signal">BUY</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: AIForecast -->
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ChartArea -->
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: DashboardLayout -->
+
+    <script>
+    (function() {
+        // @STATE: selectedStock:string = 'AAPL'
+        // @STATE: stocks:array = []
+        // @STATE: chartData:object = {}
+        
+        // Initialize Chart.js
+        const ctx = document.getElementById('stockChart');
+        const stockChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00'],
+                datasets: [{
+                    label: 'AAPL Price',
+                    data: [148.50, 149.20, 148.80, 150.10, 149.90, 150.25, 150.80, 150.60, 150.25, 150.90, 150.45, 150.25, 150.60, 150.25],
+                    borderColor: '#00d4aa',
+                    backgroundColor: 'rgba(0, 212, 170, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 6,
+                    pointHoverBackgroundColor: '#00d4aa',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 2
+                }, {
+                    label: 'Moving Average (20)',
+                    data: [148.20, 148.90, 149.10, 149.50, 149.60, 149.80, 149.90, 150.00, 150.10, 150.20, 150.15, 150.10, 150.20, 150.15],
+                    borderColor: '#8b8ca3',
+                    backgroundColor: 'transparent',
+                    borderWidth: 1,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    borderDash: [5, 5]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            color: '#8b8ca3',
+                            font: {
+                                family: 'Inter'
+                            },
+                            usePointStyle: true,
+                            pointStyle: 'line'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#252836',
+                        titleColor: '#ffffff',
+                        bodyColor: '#8b8ca3',
+                        borderColor: '#2d3748',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        titleFont: {
+                            family: 'Inter'
+                        },
+                        bodyFont: {
+                            family: 'Inter'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: '#2d3748',
+                            borderColor: '#2d3748'
+                        },
+                        ticks: {
+                            color: '#8b8ca3',
+                            font: {
+                                family: 'Inter'
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: '#2d3748',
+                            borderColor: '#2d3748'
+                        },
+                        ticks: {
+                            color: '#8b8ca3',
+                            font: {
+                                family: 'Inter'
+                            },
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // TODO: Implement real-time stock data fetching
+        // TODO: Add interactive chart features (zoom, pan)
+        // TODO: Connect to yfinance API or similar service
+        // TODO: Implement search functionality
+        // TODO: Add stock selection logic
+        // TODO: Implement AI prediction feature
+        // TODO: Add responsive chart resizing
+        // TODO: Implement technical indicators
+        // TODO: Add error handling for API failures
+        // TODO: Implement data persistence/caching
+    })();
+    </script>
+</body>
+</html>

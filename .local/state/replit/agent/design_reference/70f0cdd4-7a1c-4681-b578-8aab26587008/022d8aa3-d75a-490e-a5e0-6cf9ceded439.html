@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GROW HIKE - Stock Market Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                fontFamily: {
+                    'inter': ['Inter', 'sans-serif'],
+                },
+                colors: {
+                    'primary': '#1e293b',
+                    'secondary': '#475569',
+                    'accent': '#10b981',
+                    'danger': '#ef4444',
+                    'success': '#10b981',
+                    'warning': '#f59e0b',
+                }
+            }
+        }
+    };
+    </script>
+</head>
+<body class="font-inter bg-gray-50">
+    <!-- @COMPONENT: AppLayout [main container] -->
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Left Sidebar -->
+        <!-- @COMPONENT: Sidebar [navigation and stock list] -->
+        <div class="w-80 bg-white border-r border-gray-200 flex flex-col">
+            
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-primary">GROW HIKE</h1>
+                        <p class="text-sm text-secondary">Stock Market Dashboard</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Box -->
+            <div class="p-4 border-b border-gray-200">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" placeholder="Search stocks & IPOs..." 
+                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent outline-none"
+                           data-implementation="Should filter stocks and IPOs in real-time">
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="flex border-b border-gray-200" data-implementation="Toggle between stocks and IPOs">
+                <button class="flex-1 px-4 py-3 text-sm font-medium text-accent border-b-2 border-accent bg-accent/5" data-tab="stocks">
+                    <i class="fas fa-chart-bar mr-2"></i>Stocks
+                </button>
+                <button class="flex-1 px-4 py-3 text-sm font-medium text-secondary hover:text-accent" data-tab="ipos">
+                    <i class="fas fa-rocket mr-2"></i>IPOs
+                </button>
+            </div>
+
+            <!-- Stock List -->
+            <!-- @COMPONENT: StockList [scrollable company list] -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- @MAP: stockData.map(stock => ( -->
+                <div class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors" data-mock="true" data-event="click:selectStock">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-primary" data-bind="stock.symbol">AAPL</h3>
+                            <p class="text-sm text-secondary" data-bind="stock.name">Apple Inc.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-primary" data-bind="stock.price">$175.43</p>
+                            <p class="text-sm text-success flex items-center">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                <span data-bind="stock.change">+2.14%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-primary">GOOGL</h3>
+                            <p class="text-sm text-secondary">Alphabet Inc.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-primary">$142.56</p>
+                            <p class="text-sm text-success flex items-center">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                <span>+1.89%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-primary">MSFT</h3>
+                            <p class="text-sm text-secondary">Microsoft Corp.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-primary">$378.85</p>
+                            <p class="text-sm text-danger flex items-center">
+                                <i class="fas fa-arrow-down text-xs mr-1"></i>
+                                <span>-0.76%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-primary">TSLA</h3>
+                            <p class="text-sm text-secondary">Tesla Inc.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-primary">$248.42</p>
+                            <p class="text-sm text-success flex items-center">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                <span>+3.25%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-primary">AMZN</h3>
+                            <p class="text-sm text-secondary">Amazon.com Inc.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-primary">$155.89</p>
+                            <p class="text-sm text-success flex items-center">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                <span>+1.45%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-primary">NVDA</h3>
+                            <p class="text-sm text-secondary">NVIDIA Corp.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-primary">$875.28</p>
+                            <p class="text-sm text-success flex items-center">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                <span>+4.12%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-primary">META</h3>
+                            <p class="text-sm text-secondary">Meta Platforms Inc.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-primary">$352.96</p>
+                            <p class="text-sm text-danger flex items-center">
+                                <i class="fas fa-arrow-down text-xs mr-1"></i>
+                                <span>-1.23%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-primary">NFLX</h3>
+                            <p class="text-sm text-secondary">Netflix Inc.</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-primary">$456.78</p>
+                            <p class="text-sm text-success flex items-center">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                <span>+2.67%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-primary">BABA</h3>
+                            <p class="text-sm text-secondary">Alibaba Group</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-primary">$89.34</p>
+                            <p class="text-sm text-success flex items-center">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i>
+                                <span>+1.98%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-semibold text-primary">AMD</h3>
+                            <p class="text-sm text-secondary">Advanced Micro Devices</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-primary">$132.45</p>
+                            <p class="text-sm text-danger flex items-center">
+                                <i class="fas fa-arrow-down text-xs mr-1"></i>
+                                <span>-0.89%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- Main Content Area -->
+        <!-- @COMPONENT: MainContent [chart and data display] -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- Top Bar -->
+            <div class="bg-white border-b border-gray-200 p-6">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-primary" data-bind="selectedStock.name" data-mock="true">Apple Inc. (AAPL)</h2>
+                            <p class="text-secondary">NASDAQ • Last updated: <span data-bind="lastUpdated" data-mock="true">2 mins ago</span></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-6">
+                        <div class="text-right">
+                            <p class="text-3xl font-bold text-primary" data-bind="selectedStock.price" data-mock="true">$175.43</p>
+                            <p class="text-lg text-success flex items-center justify-end" data-mock="true">
+                                <i class="fas fa-arrow-up mr-1"></i>
+                                +$3.65 (+2.14%)
+                            </p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button class="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors">
+                                <i class="fas fa-bell mr-2"></i>Add Alert
+                            </button>
+                            <button class="px-4 py-2 border border-gray-300 text-secondary rounded-lg hover:bg-gray-50 transition-colors">
+                                <i class="fas fa-star mr-2"></i>Watchlist
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart and Analytics Section -->
+            <div class="flex-1 p-6 space-y-6 overflow-y-auto">
+                
+                <!-- Market Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-secondary">Day High</p>
+                                <p class="text-2xl font-bold text-primary" data-mock="true">$178.92</p>
+                            </div>
+                            <div class="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-arrow-up text-success text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-secondary">Day Low</p>
+                                <p class="text-2xl font-bold text-primary" data-mock="true">$172.15</p>
+                            </div>
+                            <div class="w-12 h-12 bg-danger/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-arrow-down text-danger text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-secondary">Volume</p>
+                                <p class="text-2xl font-bold text-primary" data-mock="true">45.2M</p>
+                            </div>
+                            <div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-bar text-accent text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-secondary">Market Cap</p>
+                                <p class="text-2xl font-bold text-primary" data-mock="true">$2.68T</p>
+                            </div>
+                            <div class="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-building text-warning text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Main Chart -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-semibold text-primary">Price Chart</h3>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-1 text-sm bg-accent text-white rounded-lg">1D</button>
+                                    <button class="px-3 py-1 text-sm text-secondary hover:bg-gray-100 rounded-lg">5D</button>
+                                    <button class="px-3 py-1 text-sm text-secondary hover:bg-gray-100 rounded-lg">1M</button>
+                                    <button class="px-3 py-1 text-sm text-secondary hover:bg-gray-100 rounded-lg">3M</button>
+                                    <button class="px-3 py-1 text-sm text-secondary hover:bg-gray-100 rounded-lg">1Y</button>
+                                </div>
+                            </div>
+                            <!-- @FUNCTIONALITY: Chart.js implementation for stock price visualization -->
+                            <div class="relative h-80">
+                                <canvas id="stockChart" class="w-full h-full" data-implementation="Use Chart.js with real stock data"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Predictions -->
+                    <div class="space-y-6">
+                        
+                        <!-- Price Prediction -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-primary">AI Price Prediction</h3>
+                                <div class="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-robot text-accent"></i>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-secondary">Next Day</span>
+                                        <span class="text-sm font-semibold text-success" data-mock="true">$177.20</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                        <div class="bg-accent h-2 rounded-full" style="width: 85%" data-implementation="Confidence score visualization"></div>
+                                    </div>
+                                    <span class="text-xs text-secondary">85% confidence</span>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-secondary">Next Week</span>
+                                        <span class="text-sm font-semibold text-success" data-mock="true">$182.45</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                        <div class="bg-accent h-2 rounded-full" style="width: 72%"></div>
+                                    </div>
+                                    <span class="text-xs text-secondary">72% confidence</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Indicators -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <h3 class="text-lg font-semibold text-primary mb-4">Technical Indicators</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-secondary">RSI (14)</span>
+                                    <span class="text-sm font-semibold text-warning" data-mock="true">64.2</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-secondary">MA (20)</span>
+                                    <span class="text-sm font-semibold text-success" data-mock="true">$173.45</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-secondary">MA (50)</span>
+                                    <span class="text-sm font-semibold text-accent" data-mock="true">$169.89</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-secondary">MACD</span>
+                                    <span class="text-sm font-semibold text-success" data-mock="true">+1.23</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Sentiment -->
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                            <h3 class="text-lg font-semibold text-primary mb-4">Market Sentiment</h3>
+                            <div class="flex items-center justify-center">
+                                <div class="relative w-20 h-20">
+                                    <div class="w-20 h-20 rounded-full bg-success/20 flex items-center justify-center">
+                                        <span class="text-2xl font-bold text-success" data-mock="true">78%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center text-sm text-secondary mt-2">Bullish Sentiment</p>
+                            <div class="mt-4 space-y-2">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-secondary">News Score</span>
+                                    <span class="font-semibold text-success" data-mock="true">+0.65</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-secondary">Social Score</span>
+                                    <span class="font-semibold text-accent" data-mock="true">+0.42</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IPO Section (Hidden by default, shown when IPO tab is selected) -->
+                <div class="hidden space-y-6" id="ipo-section" data-implementation="Toggle visibility based on active tab">
+                    
+                    <!-- Upcoming IPOs -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold text-primary">Upcoming IPOs</h3>
+                            <span class="text-sm text-secondary">Next 30 days</span>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-200">
+                                        <th class="text-left py-3 text-sm font-semibold text-secondary">Company</th>
+                                        <th class="text-left py-3 text-sm font-semibold text-secondary">Launch Date</th>
+                                        <th class="text-left py-3 text-sm font-semibold text-secondary">Price Band</th>
+                                        <th class="text-left py-3 text-sm font-semibold text-secondary">GMP</th>
+                                        <th class="text-left py-3 text-sm font-semibold text-secondary">AI Prediction</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-mock="true">
+                                    <tr class="border-b border-gray-100">
+                                        <td class="py-4">
+                                            <div>
+                                                <p class="font-semibold text-primary">TechCorp Solutions</p>
+                                                <p class="text-sm text-secondary">Technology</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 text-secondary">Dec 15, 2024</td>
+                                        <td class="py-4 text-primary font-semibold">₹450-480</td>
+                                        <td class="py-4">
+                                            <span class="px-2 py-1 bg-success/10 text-success text-sm rounded-lg">+₹45 (10%)</span>
+                                        </td>
+                                        <td class="py-4">
+                                            <div class="flex items-center space-x-2">
+                                                <span class="px-2 py-1 bg-success/10 text-success text-sm rounded-lg">Strong Buy</span>
+                                                <span class="text-xs text-secondary">92% confidence</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-b border-gray-100">
+                                        <td class="py-4">
+                                            <div>
+                                                <p class="font-semibold text-primary">GreenEnergy Ltd</p>
+                                                <p class="text-sm text-secondary">Renewable Energy</p>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 text-secondary">Dec 18, 2024</td>
+                                        <td class="py-4 text-primary font-semibold">₹320-350</td>
+                                        <td class="py-4">
+                                            <span class="px-2 py-1 bg-warning/10 text-warning text-sm rounded-lg">+₹15 (4.5%)</span>
+                                        </td>
+                                        <td class="py-4">
+                                            <div class="flex items-center space-x-2">
+                                                <span class="px-2 py-1 bg-accent/10 text-accent text-sm rounded-lg">Buy</span>
+                                                <span class="text-xs text-secondary">78% confidence</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- GMP Tracker -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="text-xl font-semibold text-primary mb-6">GMP Tracker & AI Analysis</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="text-lg font-semibold text-primary mb-4">Recent IPO Performance</h4>
+                                <div class="space-y-4" data-mock="true">
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-semibold text-primary">DataTech Industries</p>
+                                            <p class="text-sm text-secondary">Listed: Dec 1, 2024</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-success font-semibold">+25.6%</p>
+                                            <p class="text-sm text-secondary">vs GMP: +5.2%</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-semibold text-primary">HealthPlus Corp</p>
+                                            <p class="text-sm text-secondary">Listed: Nov 28, 2024</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-danger font-semibold">-8.2%</p>
+                                            <p class="text-sm text-secondary">vs GMP: -12.1%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-lg font-semibold text-primary mb-4">AI GMP Predictions</h4>
+                                <div class="space-y-4">
+                                    <div class="p-4 bg-accent/5 rounded-lg border-l-4 border-accent">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="font-semibold text-primary">Model Accuracy</p>
+                                                <p class="text-sm text-secondary">Last 30 predictions</p>
+                                            </div>
+                                            <span class="text-2xl font-bold text-accent" data-mock="true">87.3%</span>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 bg-success/5 rounded-lg border-l-4 border-success">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <p class="font-semibold text-primary">Success Rate</p>
+                                                <p class="text-sm text-secondary">Profitable predictions</p>
+                                            </div>
+                                            <span class="text-2xl font-bold text-success" data-mock="true">73.2%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market News -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="text-xl font-semibold text-primary mb-6">Market News & Analysis</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <article class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow" data-mock="true">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-newspaper text-accent"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-primary mb-2">Apple Reports Strong Q4 Earnings</h4>
+                                    <p class="text-sm text-secondary mb-2">Revenue beats expectations by 8% driven by iPhone and Services growth...</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-secondary">2 hours ago</span>
+                                        <span class="px-2 py-1 bg-success/10 text-success text-xs rounded-lg">Bullish</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                        
+                        <article class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow" data-mock="true">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-chart-line text-warning"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-primary mb-2">Tech Sector Outlook 2024</h4>
+                                    <p class="text-sm text-secondary mb-2">Analysts remain optimistic about technology sector performance amid AI boom...</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-secondary">5 hours ago</span>
+                                        <span class="px-2 py-1 bg-accent/10 text-accent text-xs rounded-lg">Neutral</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                        
+                        <article class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow" data-mock="true">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-12 h-12 bg-danger/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-primary mb-2">Fed Policy Impact on Markets</h4>
+                                    <p class="text-sm text-secondary mb-2">Interest rate decisions continue to influence market sentiment and valuations...</p>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-secondary">8 hours ago</span>
+                                        <span class="px-2 py-1 bg-danger/10 text-danger text-xs rounded-lg">Bearish</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: AppLayout -->
+
+    <script>
+        (function() {
+            // TODO: Implement real stock data fetching, chart updates, and AI predictions
+            
+            // Mock chart initialization
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            const stockChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30'],
+                    datasets: [{
+                        label: 'AAPL Price',
+                        data: [172.50, 173.20, 172.80, 174.10, 175.30, 174.80, 175.60, 175.43, 176.20, 175.80, 176.50, 175.90, 175.43],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Tab switching functionality
+            const stockTab = document.querySelector('[data-tab="stocks"]');
+            const ipoTab = document.querySelector('[data-tab="ipos"]');
+            const ipoSection = document.getElementById('ipo-section');
+
+            ipoTab.addEventListener('click', function() {
+                // Switch tab styling
+                stockTab.classList.remove('text-accent', 'border-b-2', 'border-accent', 'bg-accent/5');
+                stockTab.classList.add('text-secondary');
+                
+                ipoTab.classList.add('text-accent', 'border-b-2', 'border-accent', 'bg-accent/5');
+                ipoTab.classList.remove('text-secondary');
+
+                // Show IPO section
+                ipoSection.classList.remove('hidden');
+            });
+
+            stockTab.addEventListener('click', function() {
+                // Switch tab styling
+                ipoTab.classList.remove('text-accent', 'border-b-2', 'border-accent', 'bg-accent/5');
+                ipoTab.classList.add('text-secondary');
+                
+                stockTab.classList.add('text-accent', 'border-b-2', 'border-accent', 'bg-accent/5');
+                stockTab.classList.remove('text-secondary');
+
+                // Hide IPO section
+                ipoSection.classList.add('hidden');
+            });
+
+            // Stock selection functionality
+            const stockItems = document.querySelectorAll('[data-event="click:selectStock"]');
+            stockItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove active state from all items
+                    stockItems.forEach(i => i.classList.remove('bg-accent/5', 'border-l-4', 'border-accent'));
+                    
+                    // Add active state to clicked item
+                    this.classList.add('bg-accent/5', 'border-l-4', 'border-accent');
+                    
+                    // TODO: Update main content with selected stock data
+                    // TODO: Fetch new chart data and AI predictions
+                });
+            });
+
+            // Search functionality placeholder
+            const searchInput = document.querySelector('input[placeholder="Search stocks & IPOs..."]');
+            searchInput.addEventListener('input', function() {
+                // TODO: Implement real-time search filtering
+                console.log('Search query:', this.value);
+            });
+
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GROW HIKE - Stock Market Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'grow-green': '#22C55E',
+                        'grow-dark': '#1F2937',
+                        'trust-blue': '#3B82F6',
+                        'alert-red': '#EF4444'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    }
+                }
+            },
+            darkMode: 'class'
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="font-inter bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- @COMPONENT: AuthModal [Google OAuth integration] -->
+    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 w-full max-w-md mx-4 shadow-2xl">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome to GROW HIKE</h2>
+                <p class="text-gray-600 dark:text-gray-400">India's Smart Trading Platform</p>
+            </div>
+            
+            <button class="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-3 px-4 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors mb-4" data-event="click:handleGoogleAuth">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="w-5 h-5 mr-3">
+                <span class="text-gray-700 dark:text-gray-300 font-medium">Continue with Google</span>
+            </button>
+            
+            <div class="text-center">
+                <button class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300" data-event="click:closeModal">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AuthModal -->
+
+    <!-- @COMPONENT: Header [Navigation and theme toggle] -->
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 transition-colors duration-300">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold text-grow-green">GROW HIKE</h1>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Smart Trading Platform</span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- @STATE: isLoggedIn:boolean = false -->
+                <div class="hidden" id="userProfile" data-bind="user.profile">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&w=32&h=32&fit=crop&crop=face" alt="User Profile" class="w-8 h-8 rounded-full" data-mock-image="true">
+                        <span class="text-gray-700 dark:text-gray-300" data-bind="user.name">John Doe</span>
+                    </div>
+                </div>
+                
+                <button id="loginBtn" class="bg-grow-green text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors" data-event="click:showAuthModal">
+                    Login
+                </button>
+                
+                <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" data-event="click:toggleTheme">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <div class="flex h-screen pt-16">
+        <!-- @COMPONENT: Sidebar [Stock lists, search, IPO section] -->
+        <aside class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-colors duration-300">
+            <!-- Market Selection -->
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                    <button class="flex-1 py-2 px-3 rounded-md bg-grow-green text-white text-sm font-medium transition-colors" data-event="click:selectMarket" data-market="indian">
+                        Indian
+                    </button>
+                    <button class="flex-1 py-2 px-3 rounded-md text-gray-600 dark:text-gray-400 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" data-event="click:selectMarket" data-market="international">
+                        International
+                    </button>
+                    <button class="flex-1 py-2 px-3 rounded-md text-gray-600 dark:text-gray-400 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" data-event="click:selectMarket" data-market="both">
+                        Both
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Box -->
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" placeholder="Search stocks, IPOs..." class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-grow-green focus:border-transparent" data-event="input:handleSearch">
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="flex border-b border-gray-200 dark:border-gray-700">
+                <button class="flex-1 py-3 px-4 text-sm font-medium text-grow-green border-b-2 border-grow-green bg-green-50 dark:bg-green-900/20" data-event="click:switchTab" data-tab="stocks">
+                    Stocks
+                </button>
+                <button class="flex-1 py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" data-event="click:switchTab" data-tab="ipo">
+                    IPOs
+                </button>
+            </div>
+
+            <!-- Stock List -->
+            <div class="flex-1 overflow-y-auto" id="stockList">
+                <!-- @MAP: stocks.map(stock => ( -->
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-event="click:selectStock" data-stock-id="1" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white" data-bind="stock.name">Reliance Industries</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400" data-bind="stock.symbol">RELIANCE • NSE</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900 dark:text-white" data-bind="stock.price">₹2,847.50</p>
+                            <p class="text-sm text-grow-green" data-bind="stock.change">+1.2%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-event="click:selectStock" data-stock-id="2" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Tata Consultancy Services</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">TCS • NSE</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900 dark:text-white">₹3,923.15</p>
+                            <p class="text-sm text-alert-red">-0.8%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-event="click:selectStock" data-stock-id="3" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">HDFC Bank</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">HDFCBANK • NSE</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900 dark:text-white">₹1,642.30</p>
+                            <p class="text-sm text-grow-green">+2.1%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-event="click:selectStock" data-stock-id="4" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Infosys</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">INFY • NSE</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900 dark:text-white">₹1,789.90</p>
+                            <p class="text-sm text-grow-green">+0.5%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-event="click:selectStock" data-stock-id="5" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">ICICI Bank</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">ICICIBANK • NSE</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900 dark:text-white">₹1,156.75</p>
+                            <p class="text-sm text-alert-red">-1.3%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-event="click:selectStock" data-stock-id="6" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Hindustan Unilever</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">HINDUNILVR • NSE</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900 dark:text-white">₹2,634.20</p>
+                            <p class="text-sm text-grow-green">+1.7%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-event="click:selectStock" data-stock-id="7" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Apple Inc.</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">AAPL • NASDAQ</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900 dark:text-white">$189.43</p>
+                            <p class="text-sm text-grow-green">+2.3%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-event="click:selectStock" data-stock-id="8" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Microsoft Corporation</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">MSFT • NASDAQ</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900 dark:text-white">$378.85</p>
+                            <p class="text-sm text-alert-red">-0.4%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-event="click:selectStock" data-stock-id="9" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Amazon.com Inc.</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">AMZN • NASDAQ</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900 dark:text-white">$153.12</p>
+                            <p class="text-sm text-grow-green">+1.8%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-event="click:selectStock" data-stock-id="10" data-mock="true">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">Tesla Inc.</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">TSLA • NASDAQ</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-medium text-gray-900 dark:text-white">$248.97</p>
+                            <p class="text-sm text-grow-green">+3.2%</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+
+            <!-- IPO List (Hidden by default) -->
+            <div class="flex-1 overflow-y-auto hidden" id="ipoList">
+                <!-- @MAP: ipos.map(ipo => ( -->
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">XYZ Tech Solutions</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">₹450-500 • Opens Jan 15</p>
+                            <p class="text-xs text-blue-600 dark:text-blue-400">Mainboard IPO</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-grow-green">GMP: +₹25</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">5.5% premium</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 transition-colors" data-mock="true">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900 dark:text-white">ABC Pharma Ltd.</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">₹280-320 • Opens Jan 20</p>
+                            <p class="text-xs text-blue-600 dark:text-blue-400">SME IPO</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-alert-red">GMP: -₹10</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">-3.1% discount</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent [Chart area, stock details, trading interface] -->
+        <main class="flex-1 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+            <div class="h-full flex flex-col">
+                <!-- Stock Header -->
+                <div class="bg-white dark:bg-gray-800 p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-white" data-bind="selectedStock.name">Reliance Industries</h2>
+                            <p class="text-gray-500 dark:text-gray-400" data-bind="selectedStock.symbol">RELIANCE • NSE</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-4xl font-bold text-gray-900 dark:text-white" data-bind="selectedStock.price">₹2,847.50</p>
+                            <p class="text-lg text-grow-green" data-bind="selectedStock.change">+34.25 (+1.22%)</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Stock Stats -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Open</p>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white" data-bind="selectedStock.open">₹2,813.25</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">High</p>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white" data-bind="selectedStock.high">₹2,856.90</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Low</p>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white" data-bind="selectedStock.low">₹2,802.15</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Volume</p>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white" data-bind="selectedStock.volume">1.2M</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart and Trading Interface -->
+                <div class="flex-1 flex">
+                    <!-- Chart Area -->
+                    <div class="flex-1 p-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm h-full">
+                            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Price Chart</h3>
+                                    <div class="flex space-x-2">
+                                        <button class="px-3 py-1 text-sm bg-grow-green text-white rounded" data-event="click:changeTimeframe" data-timeframe="1D">1D</button>
+                                        <button class="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" data-event="click:changeTimeframe" data-timeframe="1W">1W</button>
+                                        <button class="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" data-event="click:changeTimeframe" data-timeframe="1M">1M</button>
+                                        <button class="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" data-event="click:changeTimeframe" data-timeframe="1Y">1Y</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 h-96">
+                                <!-- @FUNCTIONALITY: This chart should integrate with Chart.js to display real stock price data -->
+                                <canvas id="stockChart" class="w-full h-full"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trading Panel -->
+                    <div class="w-80 p-6">
+                        <div class="space-y-6">
+                            <!-- AI Prediction Card -->
+                            <div class="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-700">
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <i class="fas fa-brain text-purple-600"></i>
+                                    <h4 class="font-semibold text-gray-900 dark:text-white">AI Prediction</h4>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Tomorrow</span>
+                                        <span class="text-sm font-medium text-grow-green" data-bind="prediction.tomorrow">₹2,865 (+0.6%)</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">7 Days</span>
+                                        <span class="text-sm font-medium text-grow-green" data-bind="prediction.week">₹2,920 (+2.5%)</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Confidence: 78%</p>
+                                </div>
+                            </div>
+
+                            <!-- Trading Interface -->
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                                    <div class="flex space-x-2">
+                                        <button class="flex-1 py-2 px-3 bg-grow-green text-white rounded-lg font-medium" data-event="click:switchOrderType" data-type="buy">
+                                            Buy
+                                        </button>
+                                        <button class="flex-1 py-2 px-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium" data-event="click:switchOrderType" data-type="sell">
+                                            Sell
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-4 space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
+                                        <input type="number" value="1" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-grow-green" data-event="input:updateQuantity">
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order Type</label>
+                                        <select class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-grow-green" data-event="change:updateOrderType">
+                                            <option>Market</option>
+                                            <option>Limit</option>
+                                            <option>Stop Loss</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+                                        <div class="flex justify-between text-sm mb-2">
+                                            <span class="text-gray-600 dark:text-gray-400">Total Amount</span>
+                                            <span class="font-medium text-gray-900 dark:text-white" data-bind="order.total">₹2,847.50</span>
+                                        </div>
+                                        <div class="flex justify-between text-sm mb-4">
+                                            <span class="text-gray-600 dark:text-gray-400">Available Balance</span>
+                                            <span class="font-medium text-grow-green" data-bind="wallet.balance">₹25,000</span>
+                                        </div>
+                                        
+                                        <button class="w-full bg-grow-green text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors" data-event="click:placeOrder">
+                                            Place Buy Order
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Portfolio Summary -->
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                                <h4 class="font-semibold text-gray-900 dark:text-white mb-3">Portfolio</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Total Value</span>
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white" data-bind="portfolio.totalValue">₹45,680</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Day's P&L</span>
+                                        <span class="text-sm font-medium text-grow-green" data-bind="portfolio.dayPnL">+₹1,234 (+2.8%)</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Total P&L</span>
+                                        <span class="text-sm font-medium text-grow-green" data-bind="portfolio.totalPnL">+₹5,680 (+14.2%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        (function() {
+            // Theme Management
+            const themeToggle = document.getElementById('themeToggle');
+            const authModal = document.getElementById('authModal');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // Initialize theme from localStorage or default to light
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            if (currentTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+            
+            themeToggle.addEventListener('click', function() {
+                document.documentElement.classList.toggle('dark');
+                const newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+                localStorage.setItem('theme', newTheme);
+            });
+            
+            // Auth Modal Management
+            loginBtn.addEventListener('click', function() {
+                authModal.classList.remove('hidden');
+                authModal.classList.add('flex');
+            });
+            
+            authModal.addEventListener('click', function(e) {
+                if (e.target === authModal || e.target.closest('[data-event="click:closeModal"]')) {
+                    authModal.classList.add('hidden');
+                    authModal.classList.remove('flex');
+                }
+            });
+            
+            // Stock Chart Initialization
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            const stockChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30'],
+                    datasets: [{
+                        label: 'Price',
+                        data: [2813, 2825, 2832, 2829, 2834, 2840, 2835, 2842, 2838, 2845, 2847, 2850, 2847],
+                        borderColor: '#22C55E',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.2)'
+                            },
+                            ticks: {
+                                color: '#6B7280'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(156, 163, 175, 0.2)'
+                            },
+                            ticks: {
+                                color: '#6B7280'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Tab Switching
+            document.addEventListener('click', function(e) {
+                if (e.target.dataset.tab) {
+                    const tab = e.target.dataset.tab;
+                    const stockList = document.getElementById('stockList');
+                    const ipoList = document.getElementById('ipoList');
+                    
+                    // Update tab appearance
+                    document.querySelectorAll('[data-tab]').forEach(btn => {
+                        btn.classList.remove('text-grow-green', 'border-b-2', 'border-grow-green', 'bg-green-50', 'dark:bg-green-900/20');
+                        btn.classList.add('text-gray-500', 'dark:text-gray-400');
+                    });
+                    
+                    e.target.classList.remove('text-gray-500', 'dark:text-gray-400');
+                    e.target.classList.add('text-grow-green', 'border-b-2', 'border-grow-green', 'bg-green-50', 'dark:bg-green-900/20');
+                    
+                    // Show appropriate list
+                    if (tab === 'stocks') {
+                        stockList.classList.remove('hidden');
+                        ipoList.classList.add('hidden');
+                    } else if (tab === 'ipo') {
+                        stockList.classList.add('hidden');
+                        ipoList.classList.remove('hidden');
+                    }
+                }
+            });
+            
+            // Stock Selection
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('[data-stock-id]')) {
+                    const stockItem = e.target.closest('[data-stock-id]');
+                    
+                    // Remove active state from all items
+                    document.querySelectorAll('[data-stock-id]').forEach(item => {
+                        item.classList.remove('bg-blue-50', 'dark:bg-blue-900/20', 'border-l-4', 'border-blue-500');
+                    });
+                    
+                    // Add active state to selected item
+                    stockItem.classList.add('bg-blue-50', 'dark:bg-blue-900/20', 'border-l-4', 'border-blue-500');
+                    
+                    // TODO: Update main content with selected stock data
+                    // This would typically involve API calls to fetch detailed stock data
+                }
+            });
+            
+            // Market Selection
+            document.addEventListener('click', function(e) {
+                if (e.target.dataset.market) {
+                    const market = e.target.dataset.market;
+                    
+                    // Update button appearance
+                    document.querySelectorAll('[data-market]').forEach(btn => {
+                        btn.classList.remove('bg-grow-green', 'text-white');
+                        btn.classList.add('text-gray-600', 'dark:text-gray-400');
+                    });
+                    
+                    e.target.classList.remove('text-gray-600', 'dark:text-gray-400');
+                    e.target.classList.add('bg-grow-green', 'text-white');
+                    
+                    // TODO: Filter stocks based on selected market
+                }
+            });
+            
+            // Search Functionality
+            const searchInput = document.querySelector('input[data-event="input:handleSearch"]');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    // TODO: Implement search filtering logic
+                    console.log('Searching for:', searchTerm);
+                });
+            }
+            
+        })();
+    </script>
+</body>
+</html>
